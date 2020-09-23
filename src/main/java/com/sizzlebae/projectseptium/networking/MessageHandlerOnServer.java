@@ -3,8 +3,8 @@ package com.sizzlebae.projectseptium.networking;
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
-import com.sizzlebae.projectseptium.networking.messages.ChunkAetherMessageToClient;
-import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherMessageToServer;
+import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
+import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class MessageHandlerOnServer {
 
-    public static void onRequestChunkAetherMessage(final RequestChunkAetherMessageToServer message, Supplier<NetworkEvent.Context> ctxSupplier) {
+    public static void onRequestChunkAetherMessage(final RequestChunkAetherFromServer message, Supplier<NetworkEvent.Context> ctxSupplier) {
         NetworkEvent.Context ctx = ctxSupplier.get();
         ctx.setPacketHandled(true);
 
@@ -27,14 +27,13 @@ public class MessageHandlerOnServer {
                 return;
             }
 
-
             // Respond to sender with a chunk aether message
             Chunk chunk = sendingPlayer.world.getChunk(message.chunkPosX, message.chunkPosZ);
             Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
 
-            ModChannel.simpleChannel.send(PacketDistributor.PLAYER.with(()->sendingPlayer), new ChunkAetherMessageToClient(chunk, aether));
+            ModChannel.simpleChannel.send(PacketDistributor.PLAYER.with(()->sendingPlayer), new ChunkAetherToClient(chunk, aether));
 
-            ProjectSeptium.LOGGER.warn("Client requested aether chunk at: " + message.chunkPosX + ", " + message.chunkPosZ + " [" + message.dimension + "]");
+            ProjectSeptium.LOGGER.warn("Client requested aether chunk at: " + message.chunkPosX + ", " + message.chunkPosZ);
 
         });
     }

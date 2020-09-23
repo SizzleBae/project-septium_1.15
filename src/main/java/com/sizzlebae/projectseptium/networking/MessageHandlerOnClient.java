@@ -3,7 +3,7 @@ package com.sizzlebae.projectseptium.networking;
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
-import com.sizzlebae.projectseptium.networking.messages.ChunkAetherMessageToClient;
+import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.LogicalSide;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class MessageHandlerOnClient {
 
-    public static void onChunkAetherMessage(final ChunkAetherMessageToClient message, Supplier<NetworkEvent.Context> ctxSupplier) {
+    public static void onChunkAetherMessage(final ChunkAetherToClient message, Supplier<NetworkEvent.Context> ctxSupplier) {
         NetworkEvent.Context ctx = ctxSupplier.get();
         ctx.setPacketHandled(true);
 
@@ -35,7 +35,7 @@ public class MessageHandlerOnClient {
             Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
             aether.decode(message.aetherData);
 
-            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " [" + message.dimension + "] - "
+            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " - "
                     + aether.water + "/" + aether.fire + "/" + aether.earth + "/" + aether.wind);
 
         });

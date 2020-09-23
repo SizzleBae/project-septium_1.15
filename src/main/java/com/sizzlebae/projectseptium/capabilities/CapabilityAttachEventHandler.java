@@ -2,7 +2,7 @@ package com.sizzlebae.projectseptium.capabilities;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.networking.ModChannel;
-import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherMessageToServer;
+import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -19,7 +19,7 @@ public class CapabilityAttachEventHandler {
 
         // Client should request aether data when loading a chunk
         if (event.getObject().getWorld().isRemote()) {
-            ModChannel.simpleChannel.send(PacketDistributor.SERVER.noArg(), new RequestChunkAetherMessageToServer(chunk));
+            ModChannel.simpleChannel.send(PacketDistributor.SERVER.noArg(), new RequestChunkAetherFromServer(chunk));
         }
     }
 }

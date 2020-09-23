@@ -1,8 +1,8 @@
 package com.sizzlebae.projectseptium.networking;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
-import com.sizzlebae.projectseptium.networking.messages.ChunkAetherMessageToClient;
-import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherMessageToServer;
+import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
+import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -32,12 +32,12 @@ public class ModChannel {
                 MessageHandlerOnClient::isThisProtocolAcceptedByClient,
                 MessageHandlerOnServer::isThisProtocolAcceptedByServer);
 
-        simpleChannel.registerMessage(CHUNK_AETHER_MESSAGE_ID, ChunkAetherMessageToClient.class,
-                ChunkAetherMessageToClient::encode, ChunkAetherMessageToClient::decode,
+        simpleChannel.registerMessage(CHUNK_AETHER_MESSAGE_ID, ChunkAetherToClient.class,
+                ChunkAetherToClient::encode, ChunkAetherToClient::decode,
                 MessageHandlerOnClient::onChunkAetherMessage, Optional.of(PLAY_TO_CLIENT));
 
-        simpleChannel.registerMessage(REQUEST_CHUNK_AETHER_MESSAGE_ID, RequestChunkAetherMessageToServer.class,
-                RequestChunkAetherMessageToServer::encode, RequestChunkAetherMessageToServer::decode,
+        simpleChannel.registerMessage(REQUEST_CHUNK_AETHER_MESSAGE_ID, RequestChunkAetherFromServer.class,
+                RequestChunkAetherFromServer::encode, RequestChunkAetherFromServer::decode,
                 MessageHandlerOnServer::onRequestChunkAetherMessage, Optional.of(PLAY_TO_SERVER));
     }
 }

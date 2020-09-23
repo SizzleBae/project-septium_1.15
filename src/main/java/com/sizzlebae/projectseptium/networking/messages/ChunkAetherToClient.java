@@ -4,27 +4,24 @@ import com.sizzlebae.projectseptium.capabilities.Aether;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.chunk.Chunk;
 
-public class ChunkAetherMessageToClient {
+public class ChunkAetherToClient {
 
     public int chunkPosX;
     public int chunkPosZ;
-    public int dimension;
     public byte[] aetherData;
 
-    public ChunkAetherMessageToClient(Chunk chunk, Aether aether) {
-        this(chunk.getPos().x, chunk.getPos().z, chunk.getWorld().dimension.getType().getId(), aether.encode());
+    public ChunkAetherToClient(Chunk chunk, Aether aether) {
+        this(chunk.getPos().x, chunk.getPos().z, aether.encode());
     }
 
-    public ChunkAetherMessageToClient(int chunkPosX, int chunkPosZ, int dimension, byte[] aetherData) {
+    public ChunkAetherToClient(int chunkPosX, int chunkPosZ, byte[] aetherData) {
         this.chunkPosX = chunkPosX;
         this.chunkPosZ = chunkPosZ;
-        this.dimension = dimension;
         this.aetherData = aetherData;
     }
 
-    public static ChunkAetherMessageToClient decode(PacketBuffer buf) {
-        ChunkAetherMessageToClient result = new ChunkAetherMessageToClient(
-                buf.readInt(),
+    public static ChunkAetherToClient decode(PacketBuffer buf) {
+        ChunkAetherToClient result = new ChunkAetherToClient(
                 buf.readInt(),
                 buf.readInt(),
                 buf.readByteArray());
@@ -35,7 +32,6 @@ public class ChunkAetherMessageToClient {
     public void encode(PacketBuffer buf) {
         buf.writeInt(chunkPosX);
         buf.writeInt(chunkPosZ);
-        buf.writeInt(dimension);
         buf.writeByteArray(aetherData);
     }
 }
