@@ -19,7 +19,7 @@ public class ModCapabilities {
         CapabilityManager.INSTANCE.register(
                 Aether.class,
                 new Aether.Storage(),
-                Aether::defaultInstance
+                Aether::new
         );
     }
 }

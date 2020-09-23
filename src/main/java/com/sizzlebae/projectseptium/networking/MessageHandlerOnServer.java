@@ -33,7 +33,7 @@ public class MessageHandlerOnServer {
 
             ModChannel.simpleChannel.send(PacketDistributor.PLAYER.with(()->sendingPlayer), new ChunkAetherToClient(chunk, aether));
 
-            ProjectSeptium.LOGGER.warn("Client requested aether chunk at: " + message.chunkPosX + ", " + message.chunkPosZ);
+            //ProjectSeptium.LOGGER.warn("Client requested aether chunk at: " + message.chunkPosX + ", " + message.chunkPosZ);
 
         });
     }

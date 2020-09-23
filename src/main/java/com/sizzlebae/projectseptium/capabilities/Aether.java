@@ -7,21 +7,17 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class Aether {
-    public int water = 0;
-    public int fire = 0;
-    public int earth = 0;
-    public int wind = 0;
+    public final static byte AETHER_COLOR_RANGE = 4;
+    public final static byte AETHER_COLOR_SIZE = 25;
+
+    public HashMap<AetherType, AetherEntry> content = new HashMap();
 
     public Aether() {}
-
-    public Aether(int initialWater, int initialFire, int initialEarth, int initialWind) {
-        water = initialWater;
-        fire = initialFire;
-        earth = initialEarth;
-        wind = initialWind;
-    }
 
     public static class Storage implements Capability.IStorage<Aether> {
 
@@ -36,25 +32,29 @@ public class Aether {
         }
     }
 
+    public void set(AetherEntry entry) {
+        this.content.put(entry.type, entry);
+    }
+
     public byte[] encode() {
         ByteBuf buffer = Unpooled.buffer();
-        buffer.writeInt(water);
-        buffer.writeInt(fire);
-        buffer.writeInt(earth);
-        buffer.writeInt(wind);
+        buffer.writeByte(content.size());
+        for(AetherEntry entry : content.values()) {
+            buffer.writeByte(entry.type.id);
+            buffer.writeInt(entry.value);
+            buffer.writeInt(entry.max);
+        }
         return buffer.array();
     }
 
     public void decode(byte[] bytes) {
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
-        water = buffer.readInt();
-        fire = buffer.readInt();
-        earth = buffer.readInt();
-        wind = buffer.readInt();
-    }
-
-    public static Aether defaultInstance() {
-        return new Aether();
+        byte size = buffer.readByte();
+        for(int i = 0; i < size; i++) {
+            AetherType type = AetherType.values()[buffer.readByte()];
+            AetherEntry data = new AetherEntry(type, buffer.readInt(), buffer.readInt());
+            content.put(type, data);
+        }
     }
 
 }

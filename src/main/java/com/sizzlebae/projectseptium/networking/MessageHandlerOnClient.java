@@ -35,8 +35,8 @@ public class MessageHandlerOnClient {
             Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
             aether.decode(message.aetherData);
 
-            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " - "
-                    + aether.water + "/" + aether.fire + "/" + aether.earth + "/" + aether.wind);
+//            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " - "
+//                    + aether.water + "/" + aether.fire + "/" + aether.earth + "/" + aether.wind);
 
         });
     }

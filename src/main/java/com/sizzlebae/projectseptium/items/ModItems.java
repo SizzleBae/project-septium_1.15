@@ -18,7 +18,8 @@ public class ModItems {
     public static void onItemRegistration(final RegistryEvent.Register<Item> event) {
 
         event.getRegistry().registerAll(
-                setup(new ItemAetherProbe(), "item_aether_probe")
+                setup(new ItemAetherProbe(), "item_aether_probe"),
+                setup(new ItemAetherMap(), "item_aether_map")
         );
     }
 

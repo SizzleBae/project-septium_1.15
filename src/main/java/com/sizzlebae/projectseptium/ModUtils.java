@@ -14,7 +14,6 @@ public class ModUtils {
      */
     @Nonnull
     public static <T extends IForgeRegistryEntry<T>> T setup(@Nonnull final T entry, @Nonnull final String name) {
-        Preconditions.checkNotNull(name, "Name to assign to entry cannot be null!");
         return setup(entry, new ResourceLocation(ProjectSeptium.MODID, name));
     }
 
@@ -25,8 +24,6 @@ public class ModUtils {
      */
     @Nonnull
     public static <T extends IForgeRegistryEntry<T>> T setup(@Nonnull final T entry, @Nonnull final ResourceLocation registryName) {
-        Preconditions.checkNotNull(entry, "Entry cannot be null!");
-        Preconditions.checkNotNull(registryName, "Registry name to assign to entry cannot be null!");
         entry.setRegistryName(registryName);
         return entry;
     }

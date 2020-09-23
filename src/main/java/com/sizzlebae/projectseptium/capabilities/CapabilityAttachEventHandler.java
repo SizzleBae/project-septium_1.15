@@ -15,7 +15,7 @@ public class CapabilityAttachEventHandler {
     @SubscribeEvent
     public static void attachCapabilityToChunkHandler(AttachCapabilitiesEvent<Chunk> event) {
         Chunk chunk = event.getObject();
-        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), new AetherCapabilityProvider());
+        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), new ChunkAetherCapabilityProvider(chunk));
 
         // Client should request aether data when loading a chunk
         if (event.getObject().getWorld().isRemote()) {
