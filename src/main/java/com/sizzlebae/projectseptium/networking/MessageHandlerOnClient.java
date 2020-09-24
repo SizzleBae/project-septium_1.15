@@ -32,7 +32,7 @@ public class MessageHandlerOnClient {
             // Update the client side chunk aether data to match the message data
             ClientWorld world = clientWorld.get();
             Chunk chunk = world.getChunk(message.chunkPosX, message.chunkPosZ);
-            Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
+            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
             aether.decode(message.aetherData);
 
 //            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " - "

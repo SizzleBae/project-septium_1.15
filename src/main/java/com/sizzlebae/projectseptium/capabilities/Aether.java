@@ -15,7 +15,7 @@ public class Aether {
     public final static byte AETHER_COLOR_RANGE = 4;
     public final static byte AETHER_COLOR_SIZE = 25;
 
-    public HashMap<AetherType, AetherEntry> content = new HashMap();
+    public HashMap<AetherType, AetherEntry> content = new HashMap<>();
 
     public Aether() {}
 
@@ -57,4 +57,12 @@ public class Aether {
         }
     }
 
+    @Override
+    public String toString() {
+        String result = "";
+        for(AetherEntry entry : content.values()) {
+            result += "[" + entry.type.name() + ":" + entry.value + "/" + entry.max + "]";
+        }
+        return  result;
+    }
 }

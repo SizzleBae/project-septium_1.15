@@ -11,11 +11,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = ProjectSeptium.MODID)
-public class CapabilityAttachEventHandler {
+public class ChunkAetherAttacher {
+
     @SubscribeEvent
     public static void attachCapabilityToChunkHandler(AttachCapabilitiesEvent<Chunk> event) {
         Chunk chunk = event.getObject();
-        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), new ChunkAetherCapabilityProvider(chunk));
+        ChunkAetherCapabilityProvider capabilityProvider = new ChunkAetherCapabilityProvider(chunk);
+        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), capabilityProvider);
 
         // Client should request aether data when loading a chunk
         if (event.getObject().getWorld().isRemote()) {

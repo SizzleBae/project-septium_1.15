@@ -12,7 +12,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 public class ModCapabilities {
 
     @CapabilityInject(Aether.class)
-    public static Capability<Aether> CAPABILITY_AETHER = null;
+    public static Capability<Aether> AETHER = null;
+
+    @CapabilityInject(AetherMap.class)
+    public static Capability<AetherMap> AETHER_MAP = null;
 
     @SubscribeEvent
     public static void onCommonStartupEvent(FMLCommonSetupEvent event) {
@@ -20,6 +23,11 @@ public class ModCapabilities {
                 Aether.class,
                 new Aether.Storage(),
                 Aether::new
+        );
+        CapabilityManager.INSTANCE.register(
+                AetherMap.class,
+                new AetherMap.Storage(),
+                AetherMap::new
         );
     }
 }

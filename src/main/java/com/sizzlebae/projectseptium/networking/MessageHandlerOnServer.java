@@ -1,12 +1,12 @@
 package com.sizzlebae.projectseptium.networking;
 
-import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
 import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
 import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -23,13 +23,13 @@ public class MessageHandlerOnServer {
 
         ctx.enqueueWork(() -> {
             // Make sure that area is loaded to prevent server spam attack
-            if(!sendingPlayer.world.isAreaLoaded(new BlockPos(message.chunkPosX * 16, 0, message.chunkPosZ * 16),0)) {
+            if(!sendingPlayer.world.getChunkProvider().isChunkLoaded(new ChunkPos(message.chunkPosX, message.chunkPosZ))) {
                 return;
             }
 
             // Respond to sender with a chunk aether message
             Chunk chunk = sendingPlayer.world.getChunk(message.chunkPosX, message.chunkPosZ);
-            Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
+            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
 
             ModChannel.simpleChannel.send(PacketDistributor.PLAYER.with(()->sendingPlayer), new ChunkAetherToClient(chunk, aether));
 

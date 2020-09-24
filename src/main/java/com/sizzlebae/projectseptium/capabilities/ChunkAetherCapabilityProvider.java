@@ -1,12 +1,11 @@
 package com.sizzlebae.projectseptium.capabilities;
 
+import com.sizzlebae.projectseptium.utils.FastNoiseLite;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.OctavesNoiseGenerator;
-import net.minecraft.world.gen.SimplexNoiseGenerator;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -17,9 +16,9 @@ import java.util.HashMap;
 
 public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<INBT> {
 
-    private static final HashMap<World, SimplexNoiseGenerator> generators = new HashMap();
+    private static final HashMap<World, FastNoiseLite> generators = new HashMap();
 
-    private Aether aether = new Aether();
+    public Aether aether = new Aether();
     private Chunk chunk;
 
     public ChunkAetherCapabilityProvider(Chunk chunk) {
@@ -28,47 +27,48 @@ public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<IN
         World world = chunk.getWorld();
         if(!world.isRemote()) {
             // Get the noise generator for the world the chunk belongs to
-            SimplexNoiseGenerator generator = generators.get(world);
+            FastNoiseLite generator = generators.get(world);
+
             if(generator == null) {
                 // If one does not exist, create one instead and seed it with the world's random
-                generator = new SimplexNoiseGenerator(chunk.getWorld().getRandom());
+                generator = new FastNoiseLite((int) chunk.getWorld().getSeed());
+                generator.SetNoiseType(FastNoiseLite.NoiseType.Cellular);
                 generators.put(world, generator);
             }
 
             // Generate aether values based on river-like noise
             ChunkPos pos = chunk.getPos();
             aether.set(new AetherEntry(AetherType.WATER,
-                    generateLeyLineNoise(generator, pos, 0, 100), 100));
+                    generateLeyLineNoise(generator, pos, 0, 300), 300));
             aether.set(new AetherEntry(AetherType.FIRE,
-                    generateLeyLineNoise(generator, pos, 1, 100), 100));
+                    generateLeyLineNoise(generator, pos, 1, 300), 300));
             aether.set(new AetherEntry(AetherType.EARTH,
-                    generateLeyLineNoise(generator, pos, 2, 100), 100));
+                    generateLeyLineNoise(generator, pos, 2, 300), 300));
             aether.set(new AetherEntry(AetherType.WIND,
-                    generateLeyLineNoise(generator, pos, 3, 100), 100));
-
+                    generateLeyLineNoise(generator, pos, 3, 300), 300));
         }
 
     }
 
-    private int generateLeyLineNoise(SimplexNoiseGenerator generator, ChunkPos pos, int index, double outputScale) {
-        final double noiseScale = 128;
-        final double noisePower = 8;
-        double offset = index * 4096;
+    private int generateLeyLineNoise(FastNoiseLite generator, ChunkPos pos, int index, float outputScale) {
+        final float noiseScale = 0.2f;
+        final float noisePower = 8;
+        float offset = index * 4096;
 
-        double rawNoise = generator.getValue(pos.x / noiseScale + offset, pos.z / noiseScale + offset);
+        float rawNoise = generator.GetNoise(pos.x / noiseScale + offset, pos.z / noiseScale + offset);
 
-        double normalizedNoise = (rawNoise + 1.0) / 2.0;
+        float normalizedNoise = (rawNoise + 1.0f) / 2.0f;
 
-        double expNoise = Math.pow(normalizedNoise, noisePower);
+        float expNoise = (float)Math.pow(normalizedNoise, noisePower);
 
-        return (int) (expNoise * outputScale);
+        return (int) (normalizedNoise * outputScale);
     }
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
 
-        if(cap == ModCapabilities.CAPABILITY_AETHER) {
+        if(cap == ModCapabilities.AETHER) {
             return (LazyOptional<T>)LazyOptional.of(() -> aether);
         }
 
@@ -77,11 +77,11 @@ public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<IN
 
     @Override
     public INBT serializeNBT() {
-        return ModCapabilities.CAPABILITY_AETHER.writeNBT(aether, null);
+        return ModCapabilities.AETHER.writeNBT(aether, null);
     }
 
     @Override
     public void deserializeNBT(INBT nbt) {
-        ModCapabilities.CAPABILITY_AETHER.readNBT(aether, null, nbt);
+        ModCapabilities.AETHER.readNBT(aether, null, nbt);
     }
 }

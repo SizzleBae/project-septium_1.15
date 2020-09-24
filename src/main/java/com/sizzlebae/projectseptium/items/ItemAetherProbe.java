@@ -2,7 +2,6 @@ package com.sizzlebae.projectseptium.items;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
-import com.sizzlebae.projectseptium.capabilities.AetherType;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -42,13 +41,9 @@ public class ItemAetherProbe extends Item {
     public ItemStack onItemUseFinish(ItemStack stack, World worldIn, LivingEntity entityLiving)
     {
         Chunk chunk = worldIn.getChunkAt(entityLiving.getPosition());
-        Aether aether = chunk.getCapability(ModCapabilities.CAPABILITY_AETHER).orElse(null);
+        Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
 
-        ProjectSeptium.LOGGER.warn(aether.content.get(AetherType.WATER).value + "/"
-                + aether.content.get(AetherType.FIRE).value + "/"
-                + aether.content.get(AetherType.EARTH).value + "/"
-                + aether.content.get(AetherType.WIND).value
-                + " - " + worldIn.toString());
+        ProjectSeptium.LOGGER.warn(aether.toString() + " - " + worldIn.toString());
 
 //        if(!worldIn.isRemote()) {
 //            aether.water *= 0.9;
