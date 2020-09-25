@@ -16,21 +16,16 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.MapData;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Comparator;
 
 public class ItemAetherMap extends FilledMapItem {
+    public final static byte MAP_COLOR_SHADES = 3;
+    public final static byte MAP_COLOR_SHADE_SIZE = 25;
+
     public ItemAetherMap() {
         super(new Item.Properties().group(ItemGroup.MISC));
-    }
-
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
-        return new AetherMapCapabilityProvider();
     }
 
     @Override
@@ -51,27 +46,23 @@ public class ItemAetherMap extends FilledMapItem {
                     mapdata.updateVisiblePlayers(playerentity, stack);
                 }
 
-                if (!mapdata.locked && (isSelected || entityIn instanceof PlayerEntity && ((PlayerEntity)entityIn).getHeldItemOffhand() == stack)) {
-                    this.updateMapData(stack, worldIn, entityIn, mapdata);
-                }
-
             }
         }
     }
 
-    public void updateMapData(ItemStack stack, World worldIn, Entity viewer, MapData data) {
+    public void drawMap(World world, int chunkRange, MapData data) {
 
-        AetherMap aetherMap = stack.getCapability(ModCapabilities.AETHER_MAP).orElseThrow(IllegalStateException::new);
-        int chunkRange = aetherMap.chunkRange;
+        ChunkPos pos = new ChunkPos(data.xCenter / 16, data.zCenter / 16);
         int chunkCount = chunkRange * 2 + 1;
-        byte[] chunkColors = aetherMap.chunkColors;
+        byte[] chunkColors = getChunkAetherColors(world, pos, chunkRange);
 
         if(chunkColors.length == 0) {
             return;
         }
 
         int mapPixels = 128;
-        int chunkPixSize = 2;
+        int chunkPixSize = 16 / (1 << data.scale);
+
 
         boolean changed = false;
         for(int z = -chunkRange; z < chunkRange + 1; z++) {
@@ -84,6 +75,11 @@ public class ItemAetherMap extends FilledMapItem {
                 for(int pixY = 0; pixY < chunkPixSize; pixY++) {
                     for(int pixX = 0; pixX < chunkPixSize; pixX++) {
                         int pixelIndex = (pixY + pixStartY) + (pixStartX + pixX) * mapPixels;
+
+                        // Bounds check
+                        if(pixelIndex < 0 || pixelIndex >= data.colors.length) {
+                            continue;
+                        }
 
                         if(data.colors[pixelIndex] != chunkColor) {
                             data.colors[pixelIndex] = chunkColor;
@@ -106,37 +102,39 @@ public class ItemAetherMap extends FilledMapItem {
         ItemStack item = playerIn.getHeldItem(handIn);
 
         if(!worldIn.isRemote()) {
-            updateData(item, worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 26);
+            MapData data = getOrCreateMapData(worldIn, item);
+            updateMapData(worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 48, 4, data);
         }
 
         return new ActionResult(ActionResultType.SUCCESS, item);
     }
 
-    public void updateData(ItemStack stack, World worldIn, ChunkPos pos, int chunkRange) {
-
-        AetherMap aetherMap = stack.getCapability(ModCapabilities.AETHER_MAP).orElseThrow(IllegalStateException::new);
-        aetherMap.chunkRange = chunkRange;
-        aetherMap.chunkColors = getChunkAetherColors(worldIn, pos, chunkRange);
-
+    public MapData getOrCreateMapData(World worldIn, ItemStack stack) {
         CompoundNBT tag = stack.getOrCreateTag();
-        MapData data = null;
         if(!tag.contains("map")) {
             // Create and register map data if it does not exist already
             int i = worldIn.getNextMapId();
-            data = new MapData(getMapName(i));
+            MapData data = new MapData(getMapName(i));
             worldIn.registerMapData(data);
             tag.putInt("map", i);
-        } else {
-            // Otherwise get existing map data
-            data = getMapData(stack, worldIn);
+            return data;
         }
 
-        data.scale = 3;
+        // Otherwise get existing map data
+        return getMapData(stack, worldIn);
+    }
+
+    public void updateMapData(World worldIn, ChunkPos pos, int chunkRange, int scale, MapData data) {
+
+        data.scale = (byte)scale;
         data.trackingPosition = true;
         data.unlimitedTracking = true;
         data.xCenter = pos.x * 16 + 8;
         data.zCenter = pos.z * 16 + 8;
         data.dimension = worldIn.dimension.getType();
+
+        drawMap(worldIn, chunkRange, data);
+
         data.markDirty();
     }
 
@@ -150,16 +148,15 @@ public class ItemAetherMap extends FilledMapItem {
                 Chunk chunk = worldIn.getChunk(pos.x + x, pos.z + z);
                 Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
 
-                // TODO: FIX ME
                 if(aether.content.size() == 0) {
-                    ProjectSeptium.LOGGER.error("Chunk has no aether??");
+                    ProjectSeptium.LOGGER.error("Chunk " + pos.toString() + " is missing aether.");
                     continue;
                 }
 
                 AetherEntry dominantAether = Collections.max(aether.content.values(), Comparator.comparingInt(data -> data.value));
                 byte aetherColor = 0;
                 if(dominantAether != null && dominantAether.value > 0) {
-                    byte colorStrength = (byte)Math.min(dominantAether.value / Aether.MAP_COLOR_SHADE_SIZE, Aether.MAP_COLOR_SHADES);
+                    byte colorStrength = (byte)Math.min(dominantAether.value / MAP_COLOR_SHADE_SIZE, MAP_COLOR_SHADES);
                     aetherColor = (byte)(dominantAether.type.mapColor + colorStrength);
                 }
 

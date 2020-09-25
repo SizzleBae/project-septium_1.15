@@ -1,5 +1,6 @@
 package com.sizzlebae.projectseptium.capabilities;
 
+import com.sizzlebae.projectseptium.ProjectSeptium;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.ByteArrayNBT;
@@ -7,14 +8,19 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 public class Aether {
-    public final static byte MAP_COLOR_SHADES = 3;
-    public final static byte MAP_COLOR_SHADE_SIZE = 25;
+
+    public interface Listener {
+        void onChanged(Aether aether);
+    }
 
     public HashMap<AetherType, AetherEntry> content = new HashMap<>();
+
+    private ArrayList<Listener> listeners;
 
     public Aether() {}
 
@@ -31,7 +37,31 @@ public class Aether {
         }
     }
 
-    public void set(AetherEntry entry) {
+    public void addListener(Listener listener) {
+        if(listeners == null) {
+            listeners = new ArrayList<>();
+        }
+        listeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        if(!this.listeners.contains(listener)) {
+            ProjectSeptium.LOGGER.warn("Attempted to remove listener from aether that does not exist!");
+            return;
+        }
+
+        this.listeners.remove(listener);
+    }
+
+    public void notifyListeners() {
+        if(listeners != null) {
+            for(Listener listener : listeners) {
+                listener.onChanged(this);
+            }
+        }
+    }
+
+    public void put(AetherEntry entry) {
         this.content.put(entry.type, entry);
     }
 
@@ -56,6 +86,8 @@ public class Aether {
             AetherEntry data = new AetherEntry(type, buffer.readInt(), buffer.readInt());
             content.put(type, data);
         }
+
+        notifyListeners();
     }
 
     @Override
