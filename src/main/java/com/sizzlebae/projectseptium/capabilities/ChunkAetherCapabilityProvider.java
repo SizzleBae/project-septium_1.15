@@ -52,8 +52,9 @@ public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<IN
 
     private int generateLeyLineNoise(FastNoiseLite generator, ChunkPos pos, int index, float outputScale) {
         final float noiseScale = 0.2f;
-        final float noisePower = 8;
-        float offset = index * 4096;
+        final float noisePower = 2;
+        final float outputOffset = -10f;
+        float offset = index * 100000;
 
         float rawNoise = generator.GetNoise(pos.x / noiseScale + offset, pos.z / noiseScale + offset);
 
@@ -61,7 +62,8 @@ public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<IN
 
         float expNoise = (float)Math.pow(normalizedNoise, noisePower);
 
-        return (int) (normalizedNoise * outputScale);
+        float result = expNoise * outputScale + outputOffset;
+        return (int) Math.max(result, 0);
     }
 
     @Nonnull

@@ -20,7 +20,7 @@ public class ChunkAetherAttacher {
         event.addCapability(new ResourceLocation(ProjectSeptium.MODID), capabilityProvider);
 
         // Client should request aether data when loading a chunk
-        if (event.getObject().getWorld().isRemote()) {
+        if (chunk.getWorld().isRemote()) {
             ModChannel.simpleChannel.send(PacketDistributor.SERVER.noArg(), new RequestChunkAetherFromServer(chunk));
         }
     }

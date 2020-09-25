@@ -8,12 +8,11 @@ import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 
 import java.util.HashMap;
-import java.util.Map;
 
 
 public class Aether {
-    public final static byte AETHER_COLOR_RANGE = 4;
-    public final static byte AETHER_COLOR_SIZE = 25;
+    public final static byte MAP_COLOR_SHADES = 3;
+    public final static byte MAP_COLOR_SHADE_SIZE = 25;
 
     public HashMap<AetherType, AetherEntry> content = new HashMap<>();
 
@@ -48,6 +47,8 @@ public class Aether {
     }
 
     public void decode(byte[] bytes) {
+        content.clear();
+
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
         byte size = buffer.readByte();
         for(int i = 0; i < size; i++) {

@@ -23,7 +23,7 @@ public class MessageHandlerOnServer {
 
         ctx.enqueueWork(() -> {
             // Make sure that area is loaded to prevent server spam attack
-            if(!sendingPlayer.world.getChunkProvider().isChunkLoaded(new ChunkPos(message.chunkPosX, message.chunkPosZ))) {
+            if(!sendingPlayer.world.getChunkProvider().chunkExists(message.chunkPosX, message.chunkPosZ)) {
                 return;
             }
 

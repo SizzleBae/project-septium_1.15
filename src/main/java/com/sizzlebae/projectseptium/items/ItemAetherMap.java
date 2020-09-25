@@ -15,7 +15,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.MapData;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
@@ -160,8 +159,8 @@ public class ItemAetherMap extends FilledMapItem {
                 AetherEntry dominantAether = Collections.max(aether.content.values(), Comparator.comparingInt(data -> data.value));
                 byte aetherColor = 0;
                 if(dominantAether != null && dominantAether.value > 0) {
-                    byte colorStrength = (byte)Math.min(dominantAether.value / Aether.AETHER_COLOR_SIZE, Aether.AETHER_COLOR_RANGE - 1);
-                    aetherColor = (byte)(dominantAether.type.colorStart + colorStrength);
+                    byte colorStrength = (byte)Math.min(dominantAether.value / Aether.MAP_COLOR_SHADE_SIZE, Aether.MAP_COLOR_SHADES);
+                    aetherColor = (byte)(dominantAether.type.mapColor + colorStrength);
                 }
 
                 int chunkIndex = (z + chunkRange) + (x + chunkRange) * chunkCount;

@@ -7,10 +7,10 @@ public enum AetherType {
     WIND(3,120);
 
     public final byte id;
-    public final byte colorStart;
+    public final byte mapColor;
 
-    AetherType(int id, int colorStart) {
+    AetherType(int id, int mapColor) {
         this.id = (byte) id;
-        this.colorStart = (byte) colorStart;
+        this.mapColor = (byte) mapColor;
     }
 }
