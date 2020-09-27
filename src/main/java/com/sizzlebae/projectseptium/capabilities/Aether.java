@@ -73,6 +73,7 @@ public class Aether {
             buffer.writeInt(entry.value);
             buffer.writeInt(entry.max);
         }
+        buffer.capacity(buffer.writerIndex());
         return buffer.array();
     }
 

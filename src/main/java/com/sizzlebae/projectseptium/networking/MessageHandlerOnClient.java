@@ -3,9 +3,10 @@ package com.sizzlebae.projectseptium.networking;
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
+import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -31,9 +32,16 @@ public class MessageHandlerOnClient {
 
             // Update the client side chunk aether data to match the message data
             ClientWorld world = clientWorld.get();
-            Chunk chunk = world.getChunk(message.chunkPosX, message.chunkPosZ);
-            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
-            aether.decode(message.aetherData);
+
+            WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
+
+            ChunkPos pos = new ChunkPos(message.chunkPosX, message.chunkPosZ);
+            worldAether.getChunkAether(pos).decode(message.aetherData);
+
+//            Chunk chunk = world.getChunk(message.chunkPosX, message.chunkPosZ);
+//            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
+//            aether.decode(message.aetherData);
+//            ProjectSeptium.AETHER_MAP.getChunkAether(world, pos).decode(message.aetherData);
 
 //            ProjectSeptium.LOGGER.warn("Received aether chunk: " + message.chunkPosX + ", " + message.chunkPosZ + " - "
 //                    + aether.water + "/" + aether.fire + "/" + aether.earth + "/" + aether.wind);

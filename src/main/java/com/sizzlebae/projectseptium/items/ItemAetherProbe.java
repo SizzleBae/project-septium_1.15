@@ -3,6 +3,8 @@ package com.sizzlebae.projectseptium.items;
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
+import com.sizzlebae.projectseptium.capabilities.WorldAether;
+import com.sizzlebae.projectseptium.world.ChunkAetherIO;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -14,6 +16,7 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.server.ServerWorld;
 
 public class ItemAetherProbe extends Item {
 
@@ -41,18 +44,19 @@ public class ItemAetherProbe extends Item {
     public ItemStack onItemUseFinish(ItemStack stack, World worldIn, LivingEntity entityLiving)
     {
         Chunk chunk = worldIn.getChunkAt(entityLiving.getPosition());
-        Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
+//        Aether aether = ProjectSeptium.AETHER_MAP.getChunkAether(worldIn, chunk.getPos());//chunk.getCapability(ModCapabilities.AETHER).orElse(null);
+        WorldAether worldAether = worldIn.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
+        Aether aether = worldAether.getChunkAether(chunk.getPos());
 
         ProjectSeptium.LOGGER.warn(aether.toString() + " - " + worldIn.toString());
 
-//        if(!worldIn.isRemote()) {
-//            aether.water *= 0.9;
-//            aether.fire *= 0.9;
-//            aether.earth *= 0.9;
-//            aether.wind *= 0.9;
-//            chunk.markDirty();
-//            ModChannel.simpleChannel.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), new ChunkAetherToClient(chunk, aether));
-//        }
+        if(!worldIn.isRemote() && worldIn instanceof ServerWorld) {
+//            ChunkAetherIO loader = new ChunkAetherIO();
+//            loader.saveAetherChunk(aether, chunk, (ServerWorld) worldIn);
+//
+//            Aether loaded = loader.loadAetherChunk(chunk.getPos(), (ServerWorld) worldIn);
+//            ProjectSeptium.LOGGER.warn(loaded.toString() + " LOADED ");
+        }
 
         return stack;
     }

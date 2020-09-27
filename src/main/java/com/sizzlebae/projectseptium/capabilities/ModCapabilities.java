@@ -14,12 +14,20 @@ public class ModCapabilities {
     @CapabilityInject(Aether.class)
     public static Capability<Aether> AETHER = null;
 
+    @CapabilityInject(WorldAether.class)
+    public static Capability<WorldAether> WORLD_AETHER = null;
+
     @SubscribeEvent
     public static void onCommonStartupEvent(FMLCommonSetupEvent event) {
         CapabilityManager.INSTANCE.register(
                 Aether.class,
                 new Aether.Storage(),
                 Aether::new
+        );
+        CapabilityManager.INSTANCE.register(
+                WorldAether.class,
+                new WorldAether.Storage(),
+                ()->new WorldAether(null)
         );
     }
 }

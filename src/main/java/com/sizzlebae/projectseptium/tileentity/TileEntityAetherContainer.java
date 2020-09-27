@@ -4,6 +4,7 @@ import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.AetherEntry;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
+import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -62,7 +63,9 @@ public class TileEntityAetherContainer extends TileEntity implements ITickableTi
     public void tick() {
         if(ticks % 20 == 0) {
             Chunk chunk = world.getChunkAt(pos);
-            Aether chunkAether = chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
+//            Aether chunkAether = chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
+            WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
+            Aether chunkAether = worldAether.getChunkAether(chunk.getPos());
 
             if(!world.isRemote()) {
                 for(AetherEntry entry : chunkAether.content.values()) {

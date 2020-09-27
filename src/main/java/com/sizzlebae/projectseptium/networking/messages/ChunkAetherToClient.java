@@ -2,7 +2,7 @@ package com.sizzlebae.projectseptium.networking.messages;
 
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.math.ChunkPos;
 
 public class ChunkAetherToClient {
 
@@ -10,8 +10,8 @@ public class ChunkAetherToClient {
     public int chunkPosZ;
     public byte[] aetherData;
 
-    public ChunkAetherToClient(Chunk chunk, Aether aether) {
-        this(chunk.getPos().x, chunk.getPos().z, aether.encode());
+    public ChunkAetherToClient(ChunkPos pos, Aether aether) {
+        this(pos.x, pos.z, aether.encode());
     }
 
     public ChunkAetherToClient(int chunkPosX, int chunkPosZ, byte[] aetherData) {

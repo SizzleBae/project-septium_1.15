@@ -1,7 +1,10 @@
 package com.sizzlebae.projectseptium.items;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
-import com.sizzlebae.projectseptium.capabilities.*;
+import com.sizzlebae.projectseptium.capabilities.Aether;
+import com.sizzlebae.projectseptium.capabilities.AetherEntry;
+import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
+import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FilledMapItem;
@@ -14,9 +17,9 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.MapData;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -29,7 +32,7 @@ public class ItemAetherMap extends FilledMapItem {
     }
 
     @Override
-    public void onCreated(ItemStack stack, World worldIn, PlayerEntity playerIn) {
+    public void onCreated(ItemStack stack, @Nonnull World worldIn, PlayerEntity playerIn) {
     }
 
     /**
@@ -37,7 +40,7 @@ public class ItemAetherMap extends FilledMapItem {
      * update it's contents.
      */
     @Override
-    public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+    public void inventoryTick(@Nonnull ItemStack stack, World worldIn, @Nonnull Entity entityIn, int itemSlot, boolean isSelected) {
         if (!worldIn.isRemote()) {
             MapData mapdata = getMapData(stack, worldIn);
             if (mapdata != null) {
@@ -98,15 +101,16 @@ public class ItemAetherMap extends FilledMapItem {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
+    @Nonnull
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, @Nonnull Hand handIn) {
         ItemStack item = playerIn.getHeldItem(handIn);
 
         if(!worldIn.isRemote()) {
             MapData data = getOrCreateMapData(worldIn, item);
-            updateMapData(worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 48, 4, data);
+            updateMapData(worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 31, 3, data);
         }
 
-        return new ActionResult(ActionResultType.SUCCESS, item);
+        return new ActionResult<>(ActionResultType.SUCCESS, item);
     }
 
     public MapData getOrCreateMapData(World worldIn, ItemStack stack) {
@@ -143,10 +147,13 @@ public class ItemAetherMap extends FilledMapItem {
 
         byte[] colors = new byte[chunkCount * chunkCount];
 
+        WorldAether worldAether = worldIn.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
+
         for(int z = -chunkRange; z < chunkRange + 1; z++) {
             for(int x = -chunkRange; x < chunkRange + 1; x++) {
-                Chunk chunk = worldIn.getChunk(pos.x + x, pos.z + z);
-                Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
+//                Chunk chunk = worldIn.getChunk(pos.x + x, pos.z + z);
+//                Aether aether = ProjectSeptium.AETHER_MAP.getChunkAether(worldIn, new ChunkPos(pos.x + x, pos.z + z));//chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
+                Aether aether = worldAether.getChunkAether(new ChunkPos(pos.x + x, pos.z + z));
 
                 if(aether.content.size() == 0) {
                     ProjectSeptium.LOGGER.error("Chunk " + pos.toString() + " is missing aether.");
