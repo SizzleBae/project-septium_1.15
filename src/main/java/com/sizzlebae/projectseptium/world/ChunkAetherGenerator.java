@@ -5,29 +5,26 @@ import com.sizzlebae.projectseptium.capabilities.AetherEntry;
 import com.sizzlebae.projectseptium.capabilities.AetherType;
 import com.sizzlebae.projectseptium.utils.FastNoiseLite;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 public class ChunkAetherGenerator {
 
     FastNoiseLite generator;
 
-    public ChunkAetherGenerator(World world) {
-        DimensionType dimension = world.getDimension().getType();
-        generator = new FastNoiseLite((int) world.getSeed() + dimension.getId());
+    public ChunkAetherGenerator(int seed) {
+        generator = new FastNoiseLite(seed);
     }
 
     public void generateChunkAether(Aether aether, ChunkPos pos) {
         // Generate aether values based on river-like noise
-        aether.put(new AetherEntry(AetherType.WATER,
-                generateLeyLineNoise(generator, pos, 0, 300), 300));
-        aether.put(new AetherEntry(AetherType.FIRE,
-                generateLeyLineNoise(generator, pos, 1, 300), 300));
-        aether.put(new AetherEntry(AetherType.EARTH,
-                generateLeyLineNoise(generator, pos, 2, 300), 300));
-        aether.put(new AetherEntry(AetherType.WIND,
-                generateLeyLineNoise(generator, pos, 3, 300), 300));
+        aether.put(generateAetherEntry(AetherType.WATER, pos));
+        aether.put(generateAetherEntry(AetherType.FIRE, pos));
+        aether.put(generateAetherEntry(AetherType.EARTH, pos));
+        aether.put(generateAetherEntry(AetherType.WIND, pos));
+    }
 
+    private AetherEntry generateAetherEntry(AetherType type, ChunkPos pos) {
+        int basis = generateLeyLineNoise(generator, pos, type.id, 300);
+        return new AetherEntry(type, basis, basis);
     }
 
     private int generateLeyLineNoise(FastNoiseLite generator, ChunkPos pos, int index, float outputScale) {

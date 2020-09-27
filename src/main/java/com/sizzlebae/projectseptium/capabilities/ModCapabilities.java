@@ -1,6 +1,7 @@
 package com.sizzlebae.projectseptium.capabilities;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
+import com.sizzlebae.projectseptium.world.ChunkAetherGenerator;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -27,7 +28,7 @@ public class ModCapabilities {
         CapabilityManager.INSTANCE.register(
                 WorldAether.class,
                 new WorldAether.Storage(),
-                ()->new WorldAether(null)
+                ()->new WorldAether(new ChunkAetherGenerator(0), null, true)
         );
     }
 }

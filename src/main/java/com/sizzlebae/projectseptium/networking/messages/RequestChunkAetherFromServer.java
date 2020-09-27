@@ -1,6 +1,7 @@
 package com.sizzlebae.projectseptium.networking.messages;
 
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 
 public class RequestChunkAetherFromServer {
@@ -8,8 +9,8 @@ public class RequestChunkAetherFromServer {
     public int chunkPosX;
     public int chunkPosZ;
 
-    public RequestChunkAetherFromServer(Chunk chunk) {
-        this(chunk.getPos().x, chunk.getPos().z);
+    public RequestChunkAetherFromServer(ChunkPos pos) {
+        this(pos.x, pos.z);
     }
 
     public RequestChunkAetherFromServer(int chunkPosX, int chunkPosZ) {
@@ -18,11 +19,9 @@ public class RequestChunkAetherFromServer {
     }
 
     public static RequestChunkAetherFromServer decode(PacketBuffer buf) {
-        RequestChunkAetherFromServer result = new RequestChunkAetherFromServer(
+        return new RequestChunkAetherFromServer(
                 buf.readInt(),
                 buf.readInt());
-
-        return result;
     }
 
     public void encode(PacketBuffer buf) {

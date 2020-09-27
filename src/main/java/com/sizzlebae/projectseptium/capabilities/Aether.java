@@ -71,7 +71,7 @@ public class Aether {
         for(AetherEntry entry : content.values()) {
             buffer.writeByte(entry.type.id);
             buffer.writeInt(entry.value);
-            buffer.writeInt(entry.max);
+            buffer.writeInt(entry.basis);
         }
         buffer.capacity(buffer.writerIndex());
         return buffer.array();
@@ -95,7 +95,7 @@ public class Aether {
     public String toString() {
         String result = "";
         for(AetherEntry entry : content.values()) {
-            result += "[" + entry.type.name() + ":" + entry.value + "/" + entry.max + "]";
+            result += "[" + entry.type.name() + ":" + entry.value + "/" + entry.basis + "]";
         }
         return  result;
     }

@@ -1,43 +1,40 @@
 package com.sizzlebae.projectseptium.capabilities;
 
-import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.networking.ModChannel;
-import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
 import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import com.sizzlebae.projectseptium.world.ChunkAetherGenerator;
 import com.sizzlebae.projectseptium.world.ChunkAetherIO;
-import net.minecraft.nbt.ByteArrayNBT;
+import com.sizzlebae.projectseptium.world.WorldAetherTicker;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 
-@Mod.EventBusSubscriber(modid = ProjectSeptium.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldAether {
 
-    private ChunkAetherGenerator generator;
+    public final WorldAetherTicker ticker;
+    public final ChunkAetherGenerator generator;
+    public final ChunkAetherIO io;
+    public final boolean isRemote;
 
-    private HashMap<ChunkPos, Aether> aetherMap = new HashMap<>();
+    public final HashMap<ChunkPos, Aether> aetherMap = new HashMap<>();
 
-    private World world;
+    public WorldAether(ChunkAetherGenerator generator, ChunkAetherIO io, boolean isRemote) {
+        if(!isRemote && io == null) {
+            throw new IllegalStateException("WorldAether: Can't instantiate server side without IO.");
+        }
 
-    public WorldAether(World world) {
-        this.world = world;
+        this.generator = generator;
+        this.isRemote = isRemote;
+        this.io = io;
 
-        generator = new ChunkAetherGenerator(world);
+        ticker = new WorldAetherTicker(this);
     }
 
     public static class Storage implements Capability.IStorage<WorldAether> {
@@ -52,17 +49,8 @@ public class WorldAether {
         }
     }
 
-    @SubscribeEvent
-    public static void onWorldTick(TickEvent.WorldTickEvent event) {
-        if(event.side != LogicalSide.SERVER) {
-            return;
-        }
-
-
-    }
-
     @Nonnull
-    public Aether getChunkAether(ChunkPos pos) {
+    public Aether loadChunkAether(ChunkPos pos) {
         Aether aether = aetherMap.get(pos);
 
         // If aether already exists, return it
@@ -75,23 +63,41 @@ public class WorldAether {
         // Store new aether that is about to be loaded
         aetherMap.put(pos, aether);
 
-        if(!world.isRemote() && world instanceof ServerWorld) {
+        if(!isRemote) {
             // If this is on server, attempt to load from disk
-            if(!ChunkAetherIO.loadAetherChunk(aether, pos, (ServerWorld) world)) {
+            if(!io.loadAetherChunk(aether, pos)) {
                 // If there is no aether on disk, generate new aether chunk
                 generator.generateChunkAether(aether, pos);
             }
 
             // Update clients when aether in chunk changes automatically
+            //TODO: DO this?
+//            aether.addListener((data) -> {
+//                Chunk chunk = world.getChunk(pos.x, pos.z);
+//                ModChannel.simpleChannel.send(
+//                        PacketDistributor.TRACKING_CHUNK.with(()->chunk),
+//                        new ChunkAetherToClient(pos, data));
+//            });
+
+            // When aether changes, check if it is outside basis. And if it is, begin ticking it
             aether.addListener((data) -> {
-                Chunk chunk = world.getChunk(pos.x, pos.z);
-                ModChannel.simpleChannel.send(
-                        PacketDistributor.TRACKING_CHUNK.with(()->chunk),
-                        new ChunkAetherToClient(pos, data));
+                boolean atBasis = true;
+                for(AetherEntry entry : data.content.values()) {
+                    if(entry.value != entry.basis) {
+                        atBasis = false;
+                        break;
+                    }
+                }
+
+                if(atBasis) {
+                    ticker.remove(pos);
+                } else {
+                    ticker.add(pos);
+                }
             });
 
             // Update clients now that chunk is loaded/generated
-//            aether.notifyListeners();
+            //aether.notifyListeners();
         } else {
             //TODO: Maybe not do this?
             // If on client, request aether data from server

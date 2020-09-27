@@ -107,7 +107,7 @@ public class ItemAetherMap extends FilledMapItem {
 
         if(!worldIn.isRemote()) {
             MapData data = getOrCreateMapData(worldIn, item);
-            updateMapData(worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 31, 3, data);
+            updateMapData(worldIn, new ChunkPos(playerIn.chunkCoordX, playerIn.chunkCoordZ), 16, 3, data);
         }
 
         return new ActionResult<>(ActionResultType.SUCCESS, item);
@@ -151,9 +151,7 @@ public class ItemAetherMap extends FilledMapItem {
 
         for(int z = -chunkRange; z < chunkRange + 1; z++) {
             for(int x = -chunkRange; x < chunkRange + 1; x++) {
-//                Chunk chunk = worldIn.getChunk(pos.x + x, pos.z + z);
-//                Aether aether = ProjectSeptium.AETHER_MAP.getChunkAether(worldIn, new ChunkPos(pos.x + x, pos.z + z));//chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
-                Aether aether = worldAether.getChunkAether(new ChunkPos(pos.x + x, pos.z + z));
+                Aether aether = worldAether.loadChunkAether(new ChunkPos(pos.x + x, pos.z + z));
 
                 if(aether.content.size() == 0) {
                     ProjectSeptium.LOGGER.error("Chunk " + pos.toString() + " is missing aether.");

@@ -21,12 +21,10 @@ public class ChunkAetherToClient {
     }
 
     public static ChunkAetherToClient decode(PacketBuffer buf) {
-        ChunkAetherToClient result = new ChunkAetherToClient(
+        return new ChunkAetherToClient(
                 buf.readInt(),
                 buf.readInt(),
                 buf.readByteArray());
-
-        return result;
     }
 
     public void encode(PacketBuffer buf) {

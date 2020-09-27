@@ -63,9 +63,8 @@ public class TileEntityAetherContainer extends TileEntity implements ITickableTi
     public void tick() {
         if(ticks % 20 == 0) {
             Chunk chunk = world.getChunkAt(pos);
-//            Aether chunkAether = chunk.getCapability(ModCapabilities.AETHER).orElseThrow(IllegalStateException::new);
             WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
-            Aether chunkAether = worldAether.getChunkAether(chunk.getPos());
+            Aether chunkAether = worldAether.loadChunkAether(chunk.getPos());
 
             if(!world.isRemote()) {
                 for(AetherEntry entry : chunkAether.content.values()) {
@@ -84,12 +83,13 @@ public class TileEntityAetherContainer extends TileEntity implements ITickableTi
                 world.notifyBlockUpdate(pos,world.getBlockState(pos),world.getBlockState(pos),2);
                 aether.notifyListeners();
                 chunkAether.notifyListeners();
+
+                ProjectSeptium.LOGGER.warn(chunk.getPos().toString() + " " +
+                        aether.toString() + " " +
+                        !world.isRemote()
+                );
             }
 
-            ProjectSeptium.LOGGER.warn(chunk.getPos().toString() + " " +
-                    aether.toString() + " " +
-                    !world.isRemote()
-            );
         }
 
         ticks++;

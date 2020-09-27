@@ -3,23 +3,20 @@ package com.sizzlebae.projectseptium.world;
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 
 public class ChunkAetherIO {
+    public File directory;
+    public ChunkAetherIO(File directory) {
+        this.directory = directory;
+    }
 
-    public static boolean saveAetherChunk(Aether aether, Chunk chunk, ServerWorld world) {
-        File worldDirectory = world.getSaveHandler().getWorldDirectory();
-        File dimDirectory =  world.dimension.getType().getDirectory(worldDirectory);
-
-        // Make sure that the aether directory for this dimension exists
-        File aetherDirectory = new File(dimDirectory.getAbsolutePath() + "/aether/");
-
+    public boolean saveAetherChunk(Aether aether, Chunk chunk) {
         try {
             String fileName = chunk.getPos().x + "." + chunk.getPos().z + ".aed";
-            File aetherFile = new File(aetherDirectory, fileName);
+            File aetherFile = new File(directory, fileName);
 
             FileUtils.writeByteArrayToFile(aetherFile, aether.encode());
 
@@ -31,15 +28,9 @@ public class ChunkAetherIO {
         return true;
     }
 
-    public static boolean loadAetherChunk(Aether aether, ChunkPos pos, ServerWorld world) {
-
-        File worldDirectory = world.getSaveHandler().getWorldDirectory();
-        File dimDirectory =  world.dimension.getType().getDirectory(worldDirectory);
-
-        File aetherDirectory = new File(dimDirectory.getAbsolutePath() + "/aether/");
-
+    public boolean loadAetherChunk(Aether aether, ChunkPos pos) {
         String fileName = pos.x + "." + pos.z + ".aed";
-        File aetherFile = new File(aetherDirectory, fileName);
+        File aetherFile = new File(directory, fileName);
 
         if(!aetherFile.exists()) {
             return false;

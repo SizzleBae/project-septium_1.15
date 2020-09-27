@@ -36,7 +36,7 @@ public class MessageHandlerOnServer {
 //            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
             WorldAether worldAether = sendingPlayer.world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
             ChunkPos pos = new ChunkPos(message.chunkPosX, message.chunkPosZ);
-            Aether aether = worldAether.getChunkAether(pos);
+            Aether aether = worldAether.loadChunkAether(pos);
 
             ModChannel.simpleChannel.send(PacketDistributor.PLAYER.with(()->sendingPlayer),
                     new ChunkAetherToClient(pos, aether));

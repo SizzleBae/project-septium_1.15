@@ -1,7 +1,6 @@
 package com.sizzlebae.projectseptium.networking;
 
 import com.sizzlebae.projectseptium.ProjectSeptium;
-import com.sizzlebae.projectseptium.capabilities.Aether;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
 import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
@@ -36,7 +35,7 @@ public class MessageHandlerOnClient {
             WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
 
             ChunkPos pos = new ChunkPos(message.chunkPosX, message.chunkPosZ);
-            worldAether.getChunkAether(pos).decode(message.aetherData);
+            worldAether.loadChunkAether(pos).decode(message.aetherData);
 
 //            Chunk chunk = world.getChunk(message.chunkPosX, message.chunkPosZ);
 //            Aether aether = chunk.getCapability(ModCapabilities.AETHER).orElse(null);
