@@ -7,6 +7,7 @@ import com.sizzlebae.projectseptium.world.ChunkAetherIO;
 import com.sizzlebae.projectseptium.world.WorldAetherTicker;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.LongArrayNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.common.capabilities.Capability;
@@ -38,14 +39,14 @@ public class WorldAether {
     }
 
     public static class Storage implements Capability.IStorage<WorldAether> {
-
         @Override
         public INBT writeNBT(Capability<WorldAether> capability, WorldAether instance, Direction side) {
-            return new CompoundNBT();
+            return instance.ticker.writeTickingAethers();
         }
 
         @Override
         public void readNBT(Capability<WorldAether> capability, WorldAether instance, Direction side, INBT nbt) {
+            instance.ticker.readTickingAethers((LongArrayNBT) nbt);
         }
     }
 
@@ -105,6 +106,12 @@ public class WorldAether {
         }
 
         return aether;
+    }
+
+    public void saveAllAetherChunks() {
+        this.aetherMap.forEach((pos, aether)->{
+            io.saveAetherChunk(aether, pos);
+        });
     }
 
     @Nullable

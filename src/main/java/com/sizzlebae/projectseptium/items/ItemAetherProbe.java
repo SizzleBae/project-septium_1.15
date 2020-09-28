@@ -1,7 +1,7 @@
 package com.sizzlebae.projectseptium.items;
 
-import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.Aether;
+import com.sizzlebae.projectseptium.capabilities.AetherType;
 import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
 import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import net.minecraft.entity.LivingEntity;
@@ -13,15 +13,12 @@ import net.minecraft.item.UseAction;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
 
-import java.util.List;
-import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 public class ItemAetherProbe extends Item {
 
@@ -29,40 +26,44 @@ public class ItemAetherProbe extends Item {
         super(new Item.Properties().group(ItemGroup.MISC));
     }
 
+    @Nonnull
     @Override
-    public UseAction getUseAction(ItemStack stack) {
+    public UseAction getUseAction(@Nonnull ItemStack stack) {
         return UseAction.BLOCK;
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(@Nonnull ItemStack stack) {
         return 20;
     }
 
+    @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
+    public ActionResult<ItemStack> onItemRightClick(@Nonnull World worldIn, PlayerEntity playerIn, @Nonnull Hand handIn) {
         playerIn.setActiveHand(handIn);
-        return new ActionResult(ActionResultType.PASS, playerIn.getHeldItem(handIn));
+        return new ActionResult<>(ActionResultType.PASS, playerIn.getHeldItem(handIn));
     }
 
+    @Nonnull
     @Override
-    public ItemStack onItemUseFinish(ItemStack stack, World worldIn, LivingEntity entityLiving)
+    public ItemStack onItemUseFinish(@Nonnull ItemStack stack, World worldIn, LivingEntity entityLiving)
     {
         Chunk chunk = worldIn.getChunkAt(entityLiving.getPosition());
-//        Aether aether = ProjectSeptium.AETHER_MAP.getChunkAether(worldIn, chunk.getPos());//chunk.getCapability(ModCapabilities.AETHER).orElse(null);
         WorldAether worldAether = worldIn.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
         Aether aether = worldAether.loadChunkAether(chunk.getPos());
 
-        String colorCode = ((worldIn.isRemote() == true) ? "§1" : "§2");
-        StringTextComponent message = new StringTextComponent(colorCode + aether.toString());
+        String sideName = worldIn.isRemote() ? "client" : "server";
+        StringTextComponent message = new StringTextComponent(sideName + " - " + aether.toString());
         entityLiving.sendMessage(message);
 
-        if(!worldIn.isRemote() && worldIn instanceof ServerWorld) {
-//            ChunkAetherIO loader = new ChunkAetherIO();
-//            loader.saveAetherChunk(aether, chunk, (ServerWorld) worldIn);
-//
-//            Aether loaded = loader.loadAetherChunk(chunk.getPos(), (ServerWorld) worldIn);
-//            ProjectSeptium.LOGGER.warn(loaded.toString() + " LOADED ");
+        if(!worldIn.isRemote()) {
+            for(int x = chunk.getPos().x - 1; x <= chunk.getPos().x + 1; x++) {
+                for(int z = chunk.getPos().z - 1; z <= chunk.getPos().z + 1; z++) {
+                    Aether chunkAether = worldAether.loadChunkAether(new ChunkPos(x, z));
+                    chunkAether.content.get(AetherType.WATER).value *= 0.1f;
+                    chunkAether.notifyListeners();
+                }
+            }
         }
 
         return stack;

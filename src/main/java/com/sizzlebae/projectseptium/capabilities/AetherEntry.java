@@ -10,4 +10,8 @@ public class AetherEntry {
         this.value = value;
         this.basis = basis;
     }
+
+    public int basisOffset() {
+        return value - basis;
+    }
 }

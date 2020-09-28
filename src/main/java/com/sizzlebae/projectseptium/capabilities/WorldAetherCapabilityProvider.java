@@ -29,7 +29,8 @@ public class WorldAetherCapabilityProvider  implements ICapabilitySerializable<I
         if(world instanceof ServerWorld) {
             File worldDirectory = ((ServerWorld)world).getSaveHandler().getWorldDirectory();
             File dimDirectory =  world.dimension.getType().getDirectory(worldDirectory);
-            io = new ChunkAetherIO(dimDirectory);
+            File aetherDirectory = new File(dimDirectory, "aether");
+            io = new ChunkAetherIO(aetherDirectory);
         }
 
         worldAether = new WorldAether(generator, io, world.isRemote());
@@ -47,11 +48,11 @@ public class WorldAetherCapabilityProvider  implements ICapabilitySerializable<I
 
     @Override
     public INBT serializeNBT() {
-        return new CompoundNBT();
+        return ModCapabilities.WORLD_AETHER.writeNBT(worldAether, null);
     }
 
     @Override
     public void deserializeNBT(INBT nbt) {
-
+        ModCapabilities.WORLD_AETHER.readNBT(worldAether, null, nbt);
     }
 }

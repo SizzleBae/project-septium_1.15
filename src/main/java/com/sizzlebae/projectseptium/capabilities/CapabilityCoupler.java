@@ -16,7 +16,7 @@ public class CapabilityCoupler {
     public static void attachCapabilityToChunkHandler(AttachCapabilitiesEvent<Chunk> event) {
         Chunk chunk = event.getObject();
         ChunkAetherCapabilityProvider capabilityProvider = new ChunkAetherCapabilityProvider(chunk);
-        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), capabilityProvider);
+        event.addCapability(new ResourceLocation(ProjectSeptium.MODID, "chunk_aether"), capabilityProvider);
 
         // Client should request aether data when loading a chunk
 //        if (chunk.getWorld().isRemote()) {
@@ -27,7 +27,7 @@ public class CapabilityCoupler {
     @SubscribeEvent
     public static void attachCapabilityToWorldHandler(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
-        event.addCapability(new ResourceLocation(ProjectSeptium.MODID), new WorldAetherCapabilityProvider(world));
+        event.addCapability(new ResourceLocation(ProjectSeptium.MODID, "world_aether"), new WorldAetherCapabilityProvider(world));
 
     }
 }

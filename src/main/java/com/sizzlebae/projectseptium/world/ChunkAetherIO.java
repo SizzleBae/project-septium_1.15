@@ -13,9 +13,9 @@ public class ChunkAetherIO {
         this.directory = directory;
     }
 
-    public boolean saveAetherChunk(Aether aether, Chunk chunk) {
+    public boolean saveAetherChunk(Aether aether, ChunkPos pos) {
         try {
-            String fileName = chunk.getPos().x + "." + chunk.getPos().z + ".aed";
+            String fileName = pos.x + "." + pos.z + ".aed";
             File aetherFile = new File(directory, fileName);
 
             FileUtils.writeByteArrayToFile(aetherFile, aether.encode());
