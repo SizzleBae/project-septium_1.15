@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "project-septium:item/sepith_layer0",
+    "layer1": "project-septium:item/sepith_layer1"
+  }
+}

@@ -15,7 +15,6 @@ public class WorldAetherSaver {
     public static void onWorldSave(WorldEvent.Save event) {
         if(event.getWorld() instanceof ServerWorld) {
             WorldAether worldAether = ((ServerWorld) event.getWorld()).getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
-//            ((ServerWorld) event.getWorld()).save();
             worldAether.saveAllAetherChunks();
         }
 

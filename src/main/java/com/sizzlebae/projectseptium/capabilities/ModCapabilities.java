@@ -28,7 +28,7 @@ public class ModCapabilities {
         CapabilityManager.INSTANCE.register(
                 WorldAether.class,
                 new WorldAether.Storage(),
-                ()->new WorldAether(new ChunkAetherGenerator(0), null, true)
+                ()->new WorldAether(null, new ChunkAetherGenerator(0), null, true)
         );
     }
 }

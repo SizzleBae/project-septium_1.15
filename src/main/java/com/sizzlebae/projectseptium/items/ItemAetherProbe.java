@@ -6,10 +6,7 @@ import com.sizzlebae.projectseptium.capabilities.ModCapabilities;
 import com.sizzlebae.projectseptium.capabilities.WorldAether;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.UseAction;
+import net.minecraft.item.*;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -42,6 +39,27 @@ public class ItemAetherProbe extends Item {
     public ActionResult<ItemStack> onItemRightClick(@Nonnull World worldIn, PlayerEntity playerIn, @Nonnull Hand handIn) {
         playerIn.setActiveHand(handIn);
         return new ActionResult<>(ActionResultType.PASS, playerIn.getHeldItem(handIn));
+    }
+
+    @Nonnull
+    @Override
+    public ActionResultType onItemUse(ItemUseContext context) {
+        ChunkPos pos = new ChunkPos(context.getPos());
+        World world = context.getWorld();
+
+        if(!world.isRemote()) {
+            WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
+
+            for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+                for (int z = pos.z - 1; z <= pos.z + 1; z++) {
+                    Aether chunkAether = worldAether.loadChunkAether(new ChunkPos(x, z));
+                    chunkAether.content.get(AetherType.WATER).value *= 1.9f;
+                    chunkAether.notifyListeners();
+                }
+            }
+        }
+
+        return ActionResultType.SUCCESS;
     }
 
     @Nonnull

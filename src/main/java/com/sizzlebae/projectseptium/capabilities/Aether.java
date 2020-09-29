@@ -10,17 +10,13 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
+import java.util.function.Consumer;
 
 public class Aether {
 
-    public interface Listener {
-        void onChanged(Aether aether);
-    }
-
     public HashMap<AetherType, AetherEntry> content = new HashMap<>();
 
-    private ArrayList<Listener> listeners;
+    private ArrayList<Consumer<Aether>> listeners;
 
     public Aether() {}
 
@@ -37,14 +33,14 @@ public class Aether {
         }
     }
 
-    public void addListener(Listener listener) {
+    public void addListener(Consumer<Aether> listener) {
         if(listeners == null) {
             listeners = new ArrayList<>();
         }
         listeners.add(listener);
     }
 
-    public void removeListener(Listener listener) {
+    public void removeListener(Consumer<Aether> listener) {
         if(!this.listeners.contains(listener)) {
             ProjectSeptium.LOGGER.warn("Attempted to remove listener from aether that does not exist!");
             return;
@@ -55,8 +51,8 @@ public class Aether {
 
     public void notifyListeners() {
         if(listeners != null) {
-            for(Listener listener : listeners) {
-                listener.onChanged(this);
+            for(Consumer<Aether> listener : listeners) {
+                listener.accept(this);
             }
         }
     }

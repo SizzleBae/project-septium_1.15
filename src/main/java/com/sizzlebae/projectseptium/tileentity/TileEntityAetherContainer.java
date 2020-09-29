@@ -12,6 +12,7 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.chunk.Chunk;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class TileEntityAetherContainer extends TileEntity implements ITickableTileEntity {
@@ -36,6 +37,7 @@ public class TileEntityAetherContainer extends TileEntity implements ITickableTi
         read(pkt.getNbtCompound());
     }
 
+    @Nonnull
     @Override
     public CompoundNBT getUpdateTag() {
         return this.write(new CompoundNBT());
@@ -47,13 +49,14 @@ public class TileEntityAetherContainer extends TileEntity implements ITickableTi
     }
 
     @Override
-    public void read(CompoundNBT compound) {
+    public void read(@Nonnull CompoundNBT compound) {
         super.read(compound);
         aether.decode(compound.getByteArray("aether"));
     }
 
+    @Nonnull
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT write(@Nonnull CompoundNBT compound) {
         super.write(compound);
         compound.putByteArray("aether", aether.encode());
         return compound;

@@ -1,10 +1,12 @@
 package com.sizzlebae.projectseptium.world;
-import com.google.common.collect.Sets;
 import com.sizzlebae.projectseptium.ProjectSeptium;
 import com.sizzlebae.projectseptium.capabilities.*;
-import net.minecraft.nbt.IntArrayNBT;
+import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.nbt.LongArrayNBT;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -15,8 +17,8 @@ import java.util.*;
 @Mod.EventBusSubscriber(modid = ProjectSeptium.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldAetherTicker {
 
-    private final float aetherDistributionRate = 0.1f;
-    private final float aetherRegenerationRate = 0.05f;
+    public final float aetherDistributionRate = 0.1f;
+    public final float aetherRegenerationRate = 0.05f;
 
     private final WorldAether worldAether;
 
@@ -31,66 +33,96 @@ public class WorldAetherTicker {
     }
 
     public void tick() {
-        // Resolve ticking aether set
-        tickingAetherSet.addAll(aethersToAdd);
-        tickingAetherSet.removeAll(aethersToRemove);
+        if(ticks % 20 == 0 && !worldAether.world.isRemote()) {
+            // Resolve ticking aether set
+            tickingAetherSet.addAll(aethersToAdd);
+            tickingAetherSet.removeAll(aethersToRemove);
 
-        if(ticks % 20 == 0) {
-            regenerate();
+            HashSet<Aether> changedAethers = new HashSet<>();
 
-            distributeAether();
+            // Do passive regen for each aether
+            regenerate(changedAethers);
+
+            // Spread aether between chunks
+            spreadAether(changedAethers);
+
+            // Expend excess aether in various ways
+            manifestAether(changedAethers);
+
+            // Only notify changed aether chunk listeners
+            changedAethers.forEach(Aether::notifyListeners);
         }
 
         ticks++;
     }
 
-    private void distributeAether() {
-        HashMap<ChunkPos, HashMap<AetherType, Integer>> changes = new HashMap<>();
-
-        final AetherEntry emptyAetherPlaceholder = new AetherEntry(AetherType.WATER, 0, 0);
-
+    private void manifestAether(HashSet<Aether> changedAethers) {
         for(ChunkPos pos : tickingAetherSet) {
             Aether aether = worldAether.loadChunkAether(pos);
 
-            ChunkPos posN = new ChunkPos(pos.x + 1, pos.z);
-            ChunkPos posS = new ChunkPos(pos.x - 1, pos.z);
-            ChunkPos posE = new ChunkPos(pos.x, pos.z + 1);
-            ChunkPos posW = new ChunkPos(pos.x, pos.z - 1);
+            boolean changed = false;
+            for(AetherEntry aetherEntry : aether.content.values()) {
+                if(aetherEntry.basisOffset() > 0) {
+                    // Aether entries with excess value should expend it somehow
+                    ServerWorld world = (ServerWorld)worldAether.world;
+                    BlockPos lightningPos = pos.asBlockPos().add(8, 0, 8);
+                    lightningPos = lightningPos.add(0,world.getHeight(Heightmap.Type.WORLD_SURFACE, lightningPos.getX(), lightningPos.getZ()),0);
 
-            Aether aetherN = worldAether.loadChunkAether(posN);
-            Aether aetherS = worldAether.loadChunkAether(posS);
-            Aether aetherE = worldAether.loadChunkAether(posE);
-            Aether aetherW = worldAether.loadChunkAether(posW);
+                    world.addLightningBolt(new LightningBoltEntity(world, lightningPos.getX(), lightningPos.getY(), lightningPos.getZ(), false));
 
-            for(AetherEntry entry : aether.content.values()) {
-                int offset = entry.basisOffset();
-                if(offset == 0) {
-                    continue;
+                    aetherEntry.value *= 0.8;
+                    changed = true;
                 }
-
-                AetherEntry entryN = aetherN.content.getOrDefault(entry.type, emptyAetherPlaceholder);
-                AetherEntry entryS = aetherS.content.getOrDefault(entry.type, emptyAetherPlaceholder);
-                AetherEntry entryE = aetherE.content.getOrDefault(entry.type, emptyAetherPlaceholder);
-                AetherEntry entryW = aetherW.content.getOrDefault(entry.type, emptyAetherPlaceholder);
-
-                HashMap<AetherType, Integer> resultOrigin = changes.computeIfAbsent(pos, k->new HashMap<>());
-
-                computeChange(entry, entryN, resultOrigin, changes.computeIfAbsent(posN, k->new HashMap<>()));
-                computeChange(entry, entryS, resultOrigin, changes.computeIfAbsent(posS, k->new HashMap<>()));
-                computeChange(entry, entryE, resultOrigin, changes.computeIfAbsent(posE, k->new HashMap<>()));
-                computeChange(entry, entryW, resultOrigin, changes.computeIfAbsent(posW, k->new HashMap<>()));
             }
+
+            if(changed) {
+                changedAethers.add(aether);
+            }
+        }
+    }
+
+    private void spreadAether(HashSet<Aether> changedAethers) {
+        HashMap<Aether, HashMap<AetherType, Integer>> results = new HashMap<>();
+
+        for(ChunkPos pos : tickingAetherSet) {
+            Aether originAether = worldAether.loadChunkAether(pos);
+            distributeWithNeighbor(originAether, worldAether.loadChunkAether(new ChunkPos(pos.x + 1, pos.z)), results);
+            distributeWithNeighbor(originAether, worldAether.loadChunkAether(new ChunkPos(pos.x - 1, pos.z)), results);
+            distributeWithNeighbor(originAether, worldAether.loadChunkAether(new ChunkPos(pos.x, pos.z + 1)), results);
+            distributeWithNeighbor(originAether, worldAether.loadChunkAether(new ChunkPos(pos.x, pos.z - 1)), results);
         }
 
         // Apply changes
-        for(Map.Entry<ChunkPos, HashMap<AetherType, Integer>> changeEntry : changes.entrySet()) {
-            Aether aether = worldAether.loadChunkAether(changeEntry.getKey());
+        for(Map.Entry<Aether, HashMap<AetherType, Integer>> changeEntry : results.entrySet()) {
+            Aether aether = changeEntry.getKey();
 
-            for(Map.Entry<AetherType, Integer> aetherChangeEntry : changeEntry.getValue().entrySet()) {
-                aether.content.get(aetherChangeEntry.getKey()).value += aetherChangeEntry.getValue();
+            for(Map.Entry<AetherType, Integer> aetherEntryChange : changeEntry.getValue().entrySet()) {
+                AetherType type = aetherEntryChange.getKey();
+                if(aether.content.containsKey(type)) {
+                    aether.content.get(type).value += aetherEntryChange.getValue();
+                } else {
+                    // If the aether does not exist in the chunk, create it
+                    aether.put(new AetherEntry(type, aetherEntryChange.getValue(),0));
+                }
             }
 
-            aether.notifyListeners();
+            changedAethers.add(aether);
+        }
+    }
+
+    private void distributeWithNeighbor(Aether originAether, Aether neighborAether, HashMap<Aether, HashMap<AetherType, Integer>> results) {
+        for(AetherEntry originEntry : originAether.content.values()) {
+            int offset = originEntry.basisOffset();
+            if(offset == 0) {
+                continue;
+            }
+
+            AetherEntry neighborEntry = neighborAether.content.getOrDefault(originEntry.type, new AetherEntry(originEntry.type, 0, 0));
+
+            HashMap<AetherType, Integer> resultOrigin = results.computeIfAbsent(originAether, k->new HashMap<>());
+            HashMap<AetherType, Integer> resultNeighbor = results.computeIfAbsent(neighborAether, k->new HashMap<>());
+
+            computeChange(originEntry, neighborEntry, resultOrigin, resultNeighbor);
         }
     }
 
@@ -98,16 +130,22 @@ public class WorldAetherTicker {
         int offset = origin.basisOffset();
         int change = (int) (offset / 4f * aetherDistributionRate);
 
-        resultNeighbor.merge(origin.type, change, (old,k)->old+change);
-        resultOrigin.merge(neighbor.type, -change, (old,k)->old-change);
+        // Don't grab more aether than what is available in the neighbor aether
+        if(change+neighbor.value < 0) {
+            change = -neighbor.value;
+        }
+
+        int finalChange = change;
+        resultNeighbor.merge(origin.type, change, (old,k)->old+finalChange);
+        resultOrigin.merge(neighbor.type, -change, (old,k)->old-finalChange);
     }
 
-    private void regenerate() {
+    private void regenerate(HashSet<Aether> changedAethers) {
         for(ChunkPos pos : tickingAetherSet) {
-            Aether chunkAether = worldAether.loadChunkAether(pos);
+            Aether aether = worldAether.loadChunkAether(pos);
 
             boolean changed = false;
-            for(AetherEntry entry : chunkAether.content.values()) {
+            for(AetherEntry entry : aether.content.values()) {
                 // Do passive regen if aether value is below basis
                 if(entry.value < entry.basis) {
                     // Regenerate faster based on basis size, must always be at least one
@@ -119,7 +157,7 @@ public class WorldAetherTicker {
             }
 
             if(changed) {
-                chunkAether.notifyListeners();
+                changedAethers.add(aether);
             }
         }
     }

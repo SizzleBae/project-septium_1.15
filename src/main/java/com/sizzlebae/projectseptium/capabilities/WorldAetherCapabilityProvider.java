@@ -18,7 +18,7 @@ import java.io.File;
 
 public class WorldAetherCapabilityProvider  implements ICapabilitySerializable<INBT> {
 
-    private WorldAether worldAether;
+    private final WorldAether worldAether;
 
     public WorldAetherCapabilityProvider(World world) {
         DimensionType dimension = world.getDimension().getType();
@@ -33,7 +33,7 @@ public class WorldAetherCapabilityProvider  implements ICapabilitySerializable<I
             io = new ChunkAetherIO(aetherDirectory);
         }
 
-        worldAether = new WorldAether(generator, io, world.isRemote());
+        worldAether = new WorldAether(world, generator, io, world.isRemote());
     }
 
     @Nonnull

@@ -27,7 +27,7 @@ public class ChunkAetherCapabilityProvider implements ICapabilitySerializable<IN
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
         if(cap == ModCapabilities.AETHER) {
             WorldAether worldAether = world.getCapability(ModCapabilities.WORLD_AETHER).orElseThrow(IllegalStateException::new);
-            return (LazyOptional<T>)LazyOptional.of(()->worldAether);
+            return LazyOptional.of(()->(T)worldAether);
         }
 
         return LazyOptional.empty();

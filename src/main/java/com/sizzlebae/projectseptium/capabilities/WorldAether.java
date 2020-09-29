@@ -1,15 +1,17 @@
 package com.sizzlebae.projectseptium.capabilities;
 
 import com.sizzlebae.projectseptium.networking.ModChannel;
+import com.sizzlebae.projectseptium.networking.messages.ChunkAetherToClient;
 import com.sizzlebae.projectseptium.networking.messages.RequestChunkAetherFromServer;
 import com.sizzlebae.projectseptium.world.ChunkAetherGenerator;
 import com.sizzlebae.projectseptium.world.ChunkAetherIO;
 import com.sizzlebae.projectseptium.world.WorldAetherTicker;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.LongArrayNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -19,20 +21,20 @@ import java.util.HashMap;
 
 public class WorldAether {
 
+    public final World world;
     public final WorldAetherTicker ticker;
     public final ChunkAetherGenerator generator;
     public final ChunkAetherIO io;
-    public final boolean isRemote;
 
     public final HashMap<ChunkPos, Aether> aetherMap = new HashMap<>();
 
-    public WorldAether(ChunkAetherGenerator generator, ChunkAetherIO io, boolean isRemote) {
-        if(!isRemote && io == null) {
+    public WorldAether(World world, ChunkAetherGenerator generator, ChunkAetherIO io, boolean isRemote) {
+        if(!isRemote && (io == null || world == null)) {
             throw new IllegalStateException("WorldAether: Can't instantiate server side without IO.");
         }
 
+        this.world = world;
         this.generator = generator;
-        this.isRemote = isRemote;
         this.io = io;
 
         ticker = new WorldAetherTicker(this);
@@ -64,7 +66,7 @@ public class WorldAether {
         // Store new aether that is about to be loaded
         aetherMap.put(pos, aether);
 
-        if(!isRemote) {
+        if(!world.isRemote()) {
             // If this is on server, attempt to load from disk
             if(!io.loadAetherChunk(aether, pos)) {
                 // If there is no aether on disk, generate new aether chunk
@@ -73,12 +75,13 @@ public class WorldAether {
 
             // Update clients when aether in chunk changes automatically
             //TODO: DO this?
-//            aether.addListener((data) -> {
-//                Chunk chunk = world.getChunk(pos.x, pos.z);
-//                ModChannel.simpleChannel.send(
-//                        PacketDistributor.TRACKING_CHUNK.with(()->chunk),
-//                        new ChunkAetherToClient(pos, data));
-//            });
+            aether.addListener((data) -> {
+                Chunk chunk = world.getChunk(pos.x, pos.z);
+                
+                ModChannel.simpleChannel.send(
+                        PacketDistributor.TRACKING_CHUNK.with(()->chunk),
+                        new ChunkAetherToClient(pos, data));
+            });
 
             // When aether changes, check if it is outside basis. And if it is, begin ticking it
             aether.addListener((data) -> {
