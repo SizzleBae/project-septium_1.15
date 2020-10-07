@@ -1,4 +1,4 @@
-package com.sizzlebae.projectseptium.items;
+package com.sizzlebae.projectseptium.utils;
 
 import com.sizzlebae.projectseptium.capabilities.AetherType;
 

@@ -1,10 +1,9 @@
 package com.sizzlebae.projectseptium.items;
 
 import com.sizzlebae.projectseptium.capabilities.AetherType;
+import com.sizzlebae.projectseptium.utils.IAetherTypeHolder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-
-import javax.annotation.Nonnull;
 
 public class ItemSepith extends Item implements IAetherTypeHolder {
     public final AetherType type;
@@ -14,8 +13,6 @@ public class ItemSepith extends Item implements IAetherTypeHolder {
 
         this.type = type;
     }
-
-
 
     @Override
     public AetherType getAetherType() {
