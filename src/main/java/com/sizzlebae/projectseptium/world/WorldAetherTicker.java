@@ -17,6 +17,7 @@ import java.util.*;
 @Mod.EventBusSubscriber(modid = ProjectSeptium.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldAetherTicker {
 
+    public final int tickInterval = 20;
     public final float aetherDistributionRate = 0.1f;
     public final float aetherRegenerationRate = 0.05f;
 
@@ -33,7 +34,7 @@ public class WorldAetherTicker {
     }
 
     public void tick() {
-        if(ticks % 20 == 0 && !worldAether.world.isRemote()) {
+        if(ticks % tickInterval == 0 && !worldAether.world.isRemote()) {
             // Resolve ticking aether set
             tickingAetherSet.addAll(aethersToAdd);
             tickingAetherSet.removeAll(aethersToRemove);
@@ -82,6 +83,7 @@ public class WorldAetherTicker {
     }
 
     private void spreadAether(HashSet<Aether> changedAethers) {
+        // A map of aethers to change, key is aether and value is a map of aether types with a key of aether type and value of change
         HashMap<Aether, HashMap<AetherType, Integer>> results = new HashMap<>();
 
         for(ChunkPos pos : tickingAetherSet) {

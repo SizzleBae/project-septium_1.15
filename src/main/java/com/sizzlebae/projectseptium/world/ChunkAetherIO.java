@@ -2,7 +2,6 @@ package com.sizzlebae.projectseptium.world;
 
 import com.sizzlebae.projectseptium.capabilities.Aether;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -13,7 +12,7 @@ public class ChunkAetherIO {
         this.directory = directory;
     }
 
-    public boolean saveAetherChunk(Aether aether, ChunkPos pos) {
+    public void saveAetherChunk(Aether aether, ChunkPos pos) {
         try {
             String fileName = pos.x + "." + pos.z + ".aed";
             File aetherFile = new File(directory, fileName);
@@ -22,10 +21,8 @@ public class ChunkAetherIO {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
 
-        return true;
     }
 
     public boolean loadAetherChunk(Aether aether, ChunkPos pos) {

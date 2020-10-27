@@ -17,7 +17,7 @@ import static net.minecraftforge.fml.network.NetworkDirection.PLAY_TO_SERVER;
 
 @Mod.EventBusSubscriber(modid = ProjectSeptium.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModChannel {
-    public static SimpleChannel simpleChannel;
+    public static SimpleChannel simple;
 
     public static final byte CHUNK_AETHER_MESSAGE_ID = 10;
     public static final byte REQUEST_CHUNK_AETHER_MESSAGE_ID = 11;
@@ -26,18 +26,18 @@ public class ModChannel {
 
     @SubscribeEvent
     public static void onCommonSetupEvent(FMLCommonSetupEvent event) {
-        simpleChannel = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation(ProjectSeptium.MODID)
-                , () -> MESSAGE_PROTOCOL_VERSION,
-                MessageHandlerOnClient::isThisProtocolAcceptedByClient,
-                MessageHandlerOnServer::isThisProtocolAcceptedByServer);
+        simple = NetworkRegistry.newSimpleChannel(
+                new ResourceLocation(ProjectSeptium.MODID),
+                () -> MESSAGE_PROTOCOL_VERSION,
+                ModChannel.MESSAGE_PROTOCOL_VERSION::equals,
+                ModChannel.MESSAGE_PROTOCOL_VERSION::equals);
 
-        simpleChannel.registerMessage(CHUNK_AETHER_MESSAGE_ID, ChunkAetherToClient.class,
+        simple.registerMessage(CHUNK_AETHER_MESSAGE_ID, ChunkAetherToClient.class,
                 ChunkAetherToClient::encode, ChunkAetherToClient::decode,
-                MessageHandlerOnClient::onChunkAetherMessage, Optional.of(PLAY_TO_CLIENT));
+                ChunkAetherToClient::receivedOnClient, Optional.of(PLAY_TO_CLIENT));
 
-        simpleChannel.registerMessage(REQUEST_CHUNK_AETHER_MESSAGE_ID, RequestChunkAetherFromServer.class,
+        simple.registerMessage(REQUEST_CHUNK_AETHER_MESSAGE_ID, RequestChunkAetherFromServer.class,
                 RequestChunkAetherFromServer::encode, RequestChunkAetherFromServer::decode,
-                MessageHandlerOnServer::onRequestChunkAetherMessage, Optional.of(PLAY_TO_SERVER));
+                RequestChunkAetherFromServer::receivedOnServer, Optional.of(PLAY_TO_SERVER));
     }
 }

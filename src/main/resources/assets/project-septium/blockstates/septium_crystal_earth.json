@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
-      "model": "project-septium:block/septium_crystal"
-    }
+    "facing=down": { "model": "project-septium:block/septium_crystal", "x": 90 },
+    "facing=up": { "model": "project-septium:block/septium_crystal", "x": 270 },
+    "facing=north": { "model": "project-septium:block/septium_crystal" },
+    "facing=south": { "model": "project-septium:block/septium_crystal", "y": 180 },
+    "facing=west": { "model": "project-septium:block/septium_crystal", "y": 270 },
+    "facing=east": { "model": "project-septium:block/septium_crystal", "y": 90 }
   }
 }

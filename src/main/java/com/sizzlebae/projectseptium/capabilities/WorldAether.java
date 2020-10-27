@@ -78,7 +78,7 @@ public class WorldAether {
             aether.addListener((data) -> {
                 Chunk chunk = world.getChunk(pos.x, pos.z);
                 
-                ModChannel.simpleChannel.send(
+                ModChannel.simple.send(
                         PacketDistributor.TRACKING_CHUNK.with(()->chunk),
                         new ChunkAetherToClient(pos, data));
             });
@@ -105,7 +105,7 @@ public class WorldAether {
         } else {
             //TODO: Maybe not do this?
             // If on client, request aether data from server
-            ModChannel.simpleChannel.send(PacketDistributor.SERVER.noArg(), new RequestChunkAetherFromServer(pos.x, pos.z));
+            ModChannel.simple.send(PacketDistributor.SERVER.noArg(), new RequestChunkAetherFromServer(pos.x, pos.z));
         }
 
         return aether;

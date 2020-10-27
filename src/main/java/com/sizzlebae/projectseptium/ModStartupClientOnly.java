@@ -12,11 +12,18 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = ProjectSeptium.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModStartupClientOnly {
+
+    @SubscribeEvent
+    public static void onClientStartup(FMLClientSetupEvent event) {
+        
+    }
 
     @SubscribeEvent
     public static void onItemColorHandlerEvent(ColorHandlerEvent.Item event) {
